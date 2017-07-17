@@ -1,0 +1,22 @@
+{
+  "name": "probabilistic-data-structures",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChristopherAkroyd/probabilistic-data-structures.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ChristopherAkroyd/probabilistic-data-structures/issues"
+  },
+  "homepage": "https://github.com/ChristopherAkroyd/probabilistic-data-structures#readme",
+  "dependencies": {
+    "imurmurhash": "^0.1.4"
+  }
+}
