@@ -17,6 +17,11 @@
   },
   "homepage": "https://github.com/ChristopherAkroyd/probabilistic-data-structures#readme",
   "dependencies": {
-    "imurmurhash": "^0.1.4"
+    "imurmurhash": "^0.1.4",
+    "redis": "^2.7.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2"
   }
 }

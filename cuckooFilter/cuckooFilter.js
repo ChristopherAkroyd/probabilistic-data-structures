@@ -13,12 +13,11 @@ class CuckooFilter {
    * @param maxNumKicks
    */
   constructor(capacity = 10000000, fingerprintLength = 8, bucketSize = 4, maxNumKicks = 400) {
-    this.capacity = capacity;
     this.fingerprintLength = fingerprintLength;
     this.bucketSize = bucketSize;
     this.maxNumKicks = maxNumKicks;
 
-    this.numBuckets = this.capacity / this.bucketSize;
+    this.capacity = Math.ceil(capacity / this.bucketSize);
 
     this.table = this.createBuckets();
   }
@@ -26,9 +25,8 @@ class CuckooFilter {
   createBuckets() {
     const buckets = [];
 
-    for (let i = 0; i < this.numBuckets; i += 1) {
-      // buckets.push(new Bucket(this.bucketSize));
-      buckets.push(new Uint8Array(4));
+    for (let i = 0; i < this.capacity; i += 1) {
+      buckets.push(new Bucket(this.bucketSize));
     }
 
     return buckets;
@@ -97,19 +95,22 @@ class CuckooFilter {
    */
   fingerprint(key) {
     const hashValue = MMH3(key).result();
-    console.log(hashValue.toString(2).slice(0, this.fingerprintLength));
-    return hashValue.toString(2).slice(0, this.fingerprintLength);
-    // return hashValue.toString(2).substring(0, this.fingerprintLength);
+    return Number.parseInt(hashValue.toString(2).slice(0, this.fingerprintLength), 2);
   }
 
   indexOfHash(key) {
-    const itemHash = MMH3(key).result();
+    let toHash = key;
+    if (typeof toHash !== 'string') {
+      toHash = key.toString();
+    }
+
+    const itemHash = MMH3(toHash).result();
     return itemHash % this.capacity;
   }
 
   obtainIndexPair(key, fingerprint) {
     const firstIndex = this.indexOfHash(key);
-    const secondIndex = (firstIndex ^ this.indexOfHash(fingerprint)) % this.capacity;
+    const secondIndex = Math.abs((firstIndex ^ this.indexOfHash(fingerprint))) % this.capacity;
 
     return {
       firstIndex,
@@ -119,10 +120,3 @@ class CuckooFilter {
 }
 
 module.exports = CuckooFilter;
-
-console.log(process.memoryUsage());
-
-const cuckoo = new CuckooFilter();
-
-
-console.log(process.memoryUsage());
