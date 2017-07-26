@@ -6,6 +6,15 @@ function getFingerprint(key, fingerprintLength = 8) {
   return Number.parseInt(hashValue.toString(2).slice(0, fingerprintLength), 2);
 }
 
+function getHash(key) {
+  let toHash = key;
+  if (typeof toHash !== 'string') {
+    toHash = key.toString();
+  }
+  return murmur(toHash).result();
+}
+
 module.exports = {
   getFingerprint,
+  getHash,
 };
