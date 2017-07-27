@@ -1,5 +1,3 @@
-const describe = require('mocha').describe;
-const it = require('mocha').it;
 const chai = require('chai');
 
 const Bucket = require('../bucket.js');
@@ -136,13 +134,14 @@ describe('Bucket', () => {
     });
   });
 
-  describe('#randomIndex', () => {
-    it('should return an index within the bounds of the bucket.', () => {
+  describe('.randomIndex()', () => {
+    it('Should return an index within the bounds of the bucket.', () => {
+      const bucketSize = largeBucketSize * 2;
       const bucket = new Bucket(largeBucketSize);
-      const bucket2 = new Bucket(largeBucketSize * 2);
+      const bucket2 = new Bucket(bucketSize);
 
       bucket.randomIndex().should.be.within(0, largeBucketSize);
-      bucket2.randomIndex().should.be.within(0, (largeBucketSize * 2));
+      bucket2.randomIndex().should.be.within(0, bucketSize);
     });
   });
 });

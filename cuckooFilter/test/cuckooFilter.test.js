@@ -1,8 +1,7 @@
-const describe = require('mocha').describe;
-const it = require('mocha').it;
 const chai = require('chai');
 
 const CuckooFilter = require('../cuckooFilter.js');
+const Bucket = require('../bucket.js');
 const getFingerprint = require('./util.js').getFingerprint;
 const getHash = require('./util.js').getHash;
 
@@ -27,6 +26,33 @@ describe('CuckooFilter', () => {
       const expectedNumBucketsLarge = Math.ceil(largeFilterCapacity / largeBucketSize);
       cuckooSmall.capacity.should.equal(expectedNumBucketsSmall);
       cuckooLarge.capacity.should.equal(expectedNumBucketsLarge);
+    });
+  });
+
+  describe('.createBuckets()', () => {
+    it('Should create a table with a length of the correct number of buckets.', () => {
+      const cuckooSmall = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
+      const cuckooLarge = new CuckooFilter(largeFilterCapacity, fingerPrintSize, largeBucketSize);
+
+      const expectedNumBucketsSmall = Math.ceil(smallFilterCapacity / largeBucketSize);
+      const expectedNumBucketsLarge = Math.ceil(largeFilterCapacity / largeBucketSize);
+
+
+      cuckooSmall.table.length.should.equal(expectedNumBucketsSmall);
+      cuckooLarge.table.length.should.equal(expectedNumBucketsLarge);
+    });
+
+    it('Should create a table where every entry is a Bucket.', () => {
+      const cuckooSmall = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
+      const cuckooLarge = new CuckooFilter(largeFilterCapacity, fingerPrintSize, largeBucketSize);
+
+      cuckooSmall.table.forEach((bucket) => {
+        bucket.should.be.instanceof(Bucket);
+      });
+
+      cuckooLarge.table.forEach((bucket) => {
+        bucket.should.be.instanceof(Bucket);
+      });
     });
   });
 
@@ -72,11 +98,6 @@ describe('CuckooFilter', () => {
 
       const indices = cuckoo.obtainIndexPair(foo, fingerprint);
 
-      console.log(firstIndex);
-      console.log(secondIndex);
-      console.log(indices.firstIndex);
-      console.log(indices.secondIndex);
-
       indices.firstIndex.should.equal(firstIndex);
       indices.secondIndex.should.equal(secondIndex);
     });
@@ -93,7 +114,6 @@ describe('CuckooFilter', () => {
   describe('.add(key)', () => {
     it('Should add an element to the filter.', () => {
       const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
-
       cuckoo.add(foo).should.equal(true);
       cuckoo.add(bar).should.equal(true);
       cuckoo.length.should.equal(2);
@@ -112,26 +132,26 @@ describe('CuckooFilter', () => {
       count.should.equal(2);
     });
 
-    it('should should store ane element accross two different buckets', () => {
-      const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, 2);
+    it('Should store all elements across multiple buckets.', () => {
+      const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
 
       let count = 0;
       const fingerprint = getFingerprint(foo);
       const indices = cuckoo.obtainIndexPair(foo, fingerprint);
-      // fill up all buckets (needs 4 insertions since bucket size = 2)
-      cuckoo.add(foo);
-      cuckoo.add(foo);
-      cuckoo.add(foo);
-      cuckoo.add(foo);
-      // assert that buckets are full
+      const expectedFooStorage = (largeBucketSize * 2);
+      // Fill up all buckets, needs 2 * bucket size to fill up all possible indices for the item.
+      for (let i = 0; i < expectedFooStorage; i += 1) {
+        cuckoo.add(foo);
+      }
+      // All buckets should be full.
       cuckoo.table[indices.firstIndex].isFull().should.equal(true);
       cuckoo.table[indices.secondIndex].isFull().should.equal(true);
 
       count += cuckoo.table[indices.firstIndex].length + cuckoo.table[indices.secondIndex].length;
-      count.should.equal(4);
+      count.should.equal(expectedFooStorage);
     });
 
-    it('should perform random kicks when both buckets are full', () => {
+    it('Should perform the random swap stage once the buckets for an item are full.', () => {
       const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, smallBucketSize);
 
       let count = 0;
@@ -154,10 +174,10 @@ describe('CuckooFilter', () => {
       count.should.equal(3);
     });
 
-    it('should reject elements that can\'t be inserted when filter is full', () => {
-      const filter = new CuckooFilter(smallBucketSize, fingerPrintSize, smallBucketSize);
-      filter.add(foo);
-      filter.add(foo).should.equal(false);
+    it('Should reject an addition when the filter is full.', () => {
+      const cuckoo = new CuckooFilter(smallBucketSize, fingerPrintSize, smallBucketSize);
+      cuckoo.add(foo);
+      cuckoo.add(foo).should.equal(false);
     });
   });
 
@@ -172,11 +192,13 @@ describe('CuckooFilter', () => {
     });
 
     it('Should look inside every possible bucket to determine if an item is in the filter.', () => {
-      const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
+      const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, smallBucketSize);
       const indices = cuckoo.obtainIndexPair(foo, getHash(foo));
 
       cuckoo.add(foo);
       cuckoo.add(foo);
+      cuckoo.table[indices.firstIndex].length.should.equal(1);
+      cuckoo.table[indices.secondIndex].length.should.equal(1);
       cuckoo.remove(foo).should.equal(true);
       cuckoo.table[indices.firstIndex].length.should.equal(0);
       cuckoo.remove(foo).should.equal(true);

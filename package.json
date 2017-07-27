@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test-cuckoo",
     "test-cuckoo": "cd cuckooFilter/test && mocha index.js"
   },
   "repository": {
