@@ -179,12 +179,22 @@ describe('CuckooFilter', () => {
       cuckoo.add(foo);
       cuckoo.add(foo).should.equal(false);
     });
+
+    it('Should add items to the correct buckets.', () => {
+      const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, smallBucketSize);
+      const indices = cuckoo.obtainIndexPair(foo, cuckoo.fingerprint(foo));
+
+      cuckoo.add(foo);
+      cuckoo.add(foo);
+      cuckoo.table[indices.firstIndex].length.should.equal(1);
+      cuckoo.table[indices.secondIndex].length.should.equal(1);
+    });
   });
 
   describe('.remove(key)', () => {
     it('Should remove an item from the filter.', () => {
       const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
-      const indices = cuckoo.obtainIndexPair(foo, getHash(foo));
+      const indices = cuckoo.obtainIndexPair(foo, cuckoo.fingerprint(foo));
 
       cuckoo.add(foo);
       cuckoo.remove(foo).should.equal(true);
@@ -193,7 +203,7 @@ describe('CuckooFilter', () => {
 
     it('Should look inside every possible bucket to determine if an item is in the filter.', () => {
       const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, smallBucketSize);
-      const indices = cuckoo.obtainIndexPair(foo, getHash(foo));
+      const indices = cuckoo.obtainIndexPair(foo, cuckoo.fingerprint(foo));
 
       cuckoo.add(foo);
       cuckoo.add(foo);
