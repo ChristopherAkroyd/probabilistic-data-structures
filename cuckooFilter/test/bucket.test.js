@@ -44,7 +44,13 @@ describe('Bucket', () => {
   });
 
   describe('.add(key)', () => {
-    it('Should add an element to the bucket.', () => {
+    it('Should add an element to the bucket', () => {
+      const bucket = new Bucket(largeBucketSize);
+      bucket.add(fooPrint);
+      bucket.length.should.equal(1);
+    });
+
+    it('Should add the element to the bucket.', () => {
       const bucket = new Bucket(largeBucketSize);
       bucket.add(fooPrint);
       bucket.contains(fooPrint).should.equal(true);
