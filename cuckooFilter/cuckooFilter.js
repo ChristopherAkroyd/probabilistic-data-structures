@@ -1,7 +1,5 @@
 const MMH3 = require('imurmurhash');
 const Bucket = require('./bucket.js');
-// const Bucket = require('./bucketTypedArray.js');
-
 // https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf
 
 class CuckooFilter {
@@ -20,7 +18,7 @@ class CuckooFilter {
     this.capacity = Math.ceil(capacity / this.bucketSize);
 
     this.table = this.createBuckets();
-    this.length = 0;
+    this.count = 0;
   }
 
   createBuckets() {
@@ -44,10 +42,10 @@ class CuckooFilter {
     // If we can add the fingerprint to the table at either index, add it
     // and return true (result of successful addition).
     if (!this.table[firstIndex].isFull()) {
-      this.length += 1;
+      this.count += 1;
       return this.table[firstIndex].add(fingerprint);
     } else if (!this.table[secondIndex].isFull()) {
-      this.length += 1;
+      this.count += 1;
       return this.table[secondIndex].add(fingerprint);
     }
 
@@ -59,7 +57,7 @@ class CuckooFilter {
       index = (index ^ this.indexOfHash(fingerprint)) % this.capacity;
 
       if (!this.table[index].isFull()) {
-        this.length += 1;
+        this.count += 1;
         return this.table[index].add(currentFingerprint);
       }
     }
@@ -76,10 +74,10 @@ class CuckooFilter {
     const { firstIndex, secondIndex } = this.obtainIndexPair(key, fingerprint);
 
     if (this.table[firstIndex].contains(fingerprint)) {
-      this.length -= 1;
+      this.count -= 1;
       return this.table[firstIndex].remove(fingerprint);
     } else if (this.table[secondIndex].contains(fingerprint)) {
-      this.length -= 1;
+      this.count -= 1;
       return this.table[secondIndex].remove(fingerprint);
     }
     return false;

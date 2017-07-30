@@ -30,7 +30,7 @@ describe('CuckooFilter', () => {
   });
 
   describe('.createBuckets()', () => {
-    it('Should create a table with a length of the correct number of buckets.', () => {
+    it('Should create a table with a count of the correct number of buckets.', () => {
       const cuckooSmall = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
       const cuckooLarge = new CuckooFilter(largeFilterCapacity, fingerPrintSize, largeBucketSize);
 
@@ -116,7 +116,7 @@ describe('CuckooFilter', () => {
       const cuckoo = new CuckooFilter(smallFilterCapacity, fingerPrintSize, largeBucketSize);
       cuckoo.add(foo).should.equal(true);
       cuckoo.add(bar).should.equal(true);
-      cuckoo.length.should.equal(2);
+      cuckoo.count.should.equal(2);
     });
 
     it('Should maintain a consistent count of how many elements were added to the filter.', () => {
@@ -125,7 +125,7 @@ describe('CuckooFilter', () => {
       let count = 0;
       cuckoo.add(foo);
       cuckoo.add(bar);
-      cuckoo.length.should.equal(2);
+      cuckoo.count.should.equal(2);
       cuckoo.table.forEach((bucket) => {
         count += bucket.length;
       });
@@ -160,17 +160,17 @@ describe('CuckooFilter', () => {
       // artificially fills up the two possible buckets with dumb values
       cuckoo.table[indices.firstIndex].add(1);
       cuckoo.table[indices.secondIndex].add(2);
-      cuckoo.length += 2;
+      cuckoo.count += 2;
 
       cuckoo.add(foo).should.equal(true);
 
       cuckoo.table.forEach((bucket) => {
         if (bucket.length > 0) {
-          bucket.bucket[0].should.be.oneOf([1, 2, fingerprint]);
+          bucket.get(0).should.be.oneOf([1, 2, fingerprint]);
           count += bucket.length;
         }
       });
-      cuckoo.length.should.equal(3);
+      cuckoo.count.should.equal(3);
       count.should.equal(3);
     });
 
