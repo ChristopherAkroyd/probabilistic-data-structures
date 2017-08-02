@@ -3,6 +3,7 @@ class BitArray {
   constructor(bits) {
     const bytes = Math.ceil(bits / 8);
     this.buffer = Buffer.alloc(bytes, 0);
+    this.length = bits;
   }
 
   /**
