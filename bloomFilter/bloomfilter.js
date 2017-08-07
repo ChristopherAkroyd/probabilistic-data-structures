@@ -2,23 +2,11 @@ const murmur = require('imurmurhash');
 const BitArray = require('./bitArray.js');
 
 class BloomFilter {
-  constructor(expectedInserts, falsePositiveRate) {
+  constructor(bits, numHashFunctions) {
     this.count = 0;
-    this.capacity = expectedInserts;
-    this.falsePositives = falsePositiveRate;
-    this.size = this.calculateSize(expectedInserts, falsePositiveRate);
-    this.kHashFunctions = this.optimalNumHashFunctions(expectedInserts, falsePositiveRate);
+    this.size = bits;
+    this.kHashFunctions = numHashFunctions;
     this.bitArray = new BitArray(this.size);
-  }
-
-  calculateSize(expectedInserts, falsePositiveRate) {
-    const ln2Sq = Math.LN2 ** 2;
-    const nLnP = expectedInserts * Math.log(falsePositiveRate);
-    return Math.ceil(nLnP / -ln2Sq);
-  }
-
-  optimalNumHashFunctions(expectedInserts, size) {
-    return (expectedInserts / size) * Math.LN2;
   }
 
   /**
@@ -42,6 +30,7 @@ class BloomFilter {
     indices.forEach((index) => {
       this.bitArray.setBit(indices[index], true);
     });
+    this.count += 1;
   }
 
   /**
@@ -60,6 +49,15 @@ class BloomFilter {
     }
     // If none of the bits checked are false, we return true as the key is in the filter.
     return true;
+  }
+
+  /**
+   * Provides an estimate for the false positive rate.
+   * http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
+   * @returns {number}
+   */
+  falsePositiveRate() {
+    return Math.LN2 ** (this.size / this.count);
   }
 }
 

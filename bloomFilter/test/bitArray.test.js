@@ -9,7 +9,7 @@ const medBitArraySize = 16;
 const largeBitArraySize = 32;
 
 
-describe('Bucket', () => {
+describe('BitArray', () => {
   describe('constructor', () => {
     it('Should create a bit array with the correct length.', () => {
       const bitArraySmall = new BitArray(smallBitArraySize);
