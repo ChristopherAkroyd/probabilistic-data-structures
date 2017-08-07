@@ -49,6 +49,20 @@ class BitArray {
   getBit(index) {
     return (this.buffer[this.byte(index)] & this.bit(index)) !== 0;
   }
+
+  /**
+   * Counts the number of bits in the BitArray that have been set to 1 (true).
+   * @return {Number}
+   */
+  numberOfBitsSet() {
+    let count = 0;
+    for (let i = 0; i < this.buffer.length * 8; i += 1) {
+      if (this.getBit(i)) {
+        count += 1;
+      }
+    }
+    return count;
+  }
 }
 
 module.exports = BitArray;

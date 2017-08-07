@@ -96,10 +96,6 @@ describe('BitArray', () => {
       const bitArray = new BitArray(largeBitArraySize);
 
       for (let i = 0; i < bitArray.length; i += 1) {
-        bitArray.setBit(i, false);
-      }
-
-      for (let i = 0; i < bitArray.length; i += 1) {
         bitArray.getBit(i).should.equal(false);
       }
     });
@@ -114,6 +110,34 @@ describe('BitArray', () => {
       for (let i = 0; i < bitArray.length; i += 1) {
         bitArray.getBit(i).should.equal(true);
       }
+    });
+  });
+
+  describe('.numberOfBitsSet()', () => {
+    it('Should return 0 when the bit array has no bits set.', () => {
+      const bitArray = new BitArray(largeBitArraySize);
+      bitArray.numberOfBitsSet().should.equal(0);
+    });
+
+    it('Should return the the length of the BitArray when all bits are set.', () => {
+      const bitArray = new BitArray(largeBitArraySize);
+
+      for (let i = 0; i < bitArray.length; i += 1) {
+        bitArray.setBit(i, true);
+      }
+
+      bitArray.numberOfBitsSet().should.equal(largeBitArraySize);
+    });
+
+    it('Should return the correct number of bits that have been set.', () => {
+      const bitArray = new BitArray(largeBitArraySize);
+      const bitsToSet = Math.ceil(largeBitArraySize / 3);
+
+      for (let i = 0; i < bitsToSet; i += 1) {
+        bitArray.setBit(i, true);
+      }
+
+      bitArray.numberOfBitsSet().should.equal(bitsToSet);
     });
   });
 });

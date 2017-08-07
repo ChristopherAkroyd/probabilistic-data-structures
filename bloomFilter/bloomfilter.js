@@ -1,6 +1,10 @@
 const murmur = require('imurmurhash');
 const BitArray = require('./bitArray.js');
 
+/**
+ * https://bdupras.github.io/filter-tutorial/
+ * https://en.wikipedia.org/wiki/Bloom_filter
+ */
 class BloomFilter {
   constructor(bits, numHashFunctions) {
     this.count = 0;
@@ -52,12 +56,21 @@ class BloomFilter {
   }
 
   /**
-   * Provides an estimate for the false positive rate.
-   * http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
+   * Provides an estimate for the false positive rate with the current inserted elements,
+   * this will most likely be lower than the expected false positive rate when the filter
+   * is not near the its capacity.
+   *
+   * probFalsePositive = (s / m) ^ k
+   * s - Number of Bits Set.
+   * m - Number of Bits in the Filter
+   * k - Number of Hash Functions used.
+   *
+   * http://ws680.nist.gov/publication/get_pdf.cfm?pub_id=903775
+   * http://cglab.ca/~morin/publications/ds/bloom-submitted.pdf
    * @returns {number}
    */
   falsePositiveRate() {
-    return Math.LN2 ** (this.size / this.count);
+    return (this.bitArray.numberOfBitsSet() / this.bitArray.length) ** this.kHashFunctions;
   }
 }
 
