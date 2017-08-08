@@ -1,5 +1,9 @@
-const murmur = require('imurmurhash');
+const MurMur = require('imurmurhash');
 const BitArray = require('./bitArray.js');
+
+// @TODO Remove these hardcoded seed values.
+const seedOne = 535345345;
+const seedTwo = 312312323;
 
 /**
  * https://bdupras.github.io/filter-tutorial/
@@ -11,6 +15,8 @@ class BloomFilter {
     this.size = bits;
     this.kHashFunctions = numHashFunctions;
     this.bitArray = new BitArray(this.size);
+    this.murmurOne = new MurMur('', seedOne);
+    this.murmurTwo = new MurMur('', seedTwo);
   }
 
   /**
@@ -20,12 +26,16 @@ class BloomFilter {
    * @returns {Array}
    */
   calculateBitIndices(key) {
-    const hash1 = murmur(key).result();
-    const hash2 = murmur(key).result();
+    const hash1 = this.murmurOne.hash(key).result();
+    const hash2 = this.murmurTwo.hash(key).result();
     const kHashes = [];
     for (let i = 0; i < this.kHashFunctions; i += 1) {
-      kHashes.push(((hash1 + i) * hash2) % this.size);
+      kHashes.push((hash1 + (i * hash2)) % this.size);
     }
+
+    this.murmurOne.reset(seedOne);
+    this.murmurTwo.reset(seedTwo);
+
     return kHashes;
   }
 
@@ -58,7 +68,7 @@ class BloomFilter {
   /**
    * Provides an estimate for the false positive rate with the current inserted elements,
    * this will most likely be lower than the expected false positive rate when the filter
-   * is not near the its capacity.
+   * is not near the its capacity but will trend towards 100% as it fills up.
    *
    * probFalsePositive = (s / m) ^ k
    * s - Number of Bits Set.
