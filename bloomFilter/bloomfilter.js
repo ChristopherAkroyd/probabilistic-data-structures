@@ -39,12 +39,26 @@ class BloomFilter {
     return kHashes;
   }
 
+  /**
+   * Adds the given key to the filter, if all the bits are already set then it doesn't increase the count
+   * as it is assumed to be already added to the filter.
+   *
+   * @param key
+   */
   add(key) {
     const indices = this.calculateBitIndices(key);
-    indices.forEach((index) => {
-      this.bitArray.setBit(indices[index], true);
-    });
-    this.count += 1;
+    let numAlreadySet = 0;
+
+    for (let i = 0; i < indices.length; i += 1) {
+      if (this.bitArray.getBit(indices[i])) {
+        numAlreadySet += 1;
+      }
+      this.bitArray.setBit(indices[i], true);
+    }
+
+    if (numAlreadySet < indices.length) {
+      this.count += 1;
+    }
   }
 
   /**

@@ -140,4 +140,42 @@ describe('BitArray', () => {
       bitArray.numberOfBitsSet().should.equal(bitsToSet);
     });
   });
+
+  describe('.bit(index)', () => {
+    it('Should return the same value for the same index.', () => {
+      const bitArray = new BitArray(largeBitArraySize);
+      const bitStrings = [];
+
+      for (let i = 0; i < bitArray.length; i += 1) {
+        bitStrings.push(bitArray.bit(i).toString(2));
+      }
+
+      for (let i = 0; i < bitArray.length; i += 1) {
+        bitArray.bit(i).toString(2).should.equal(bitStrings[i]);
+      }
+    });
+
+    it('Should return a value higher than 0 for an index greater than 0.', () => {
+      const bitArray = new BitArray(largeBitArraySize);
+
+      const bit = bitArray.bit(52);
+
+      bit.should.be.above(0);
+    });
+  });
+
+  describe('.byte(index)', () => {
+    it('Should return the same byte index for the given bit index.', () => {
+      const bitArray = new BitArray(largeBitArraySize);
+      const indices = [];
+
+      for (let i = 0; i < bitArray.length; i += 1) {
+        indices.push(bitArray.byte(i));
+      }
+
+      for (let i = 0; i < bitArray.length; i += 1) {
+        bitArray.byte(i).should.equal(indices[i]);
+      }
+    });
+  });
 });

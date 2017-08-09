@@ -69,9 +69,6 @@ describe('BloomFilter', () => {
       const indicesFoo = bloom.calculateBitIndices(foo);
       const indicesBar = bloom.calculateBitIndices(bar);
 
-      console.log(indicesFoo);
-      console.log(indicesBar);
-
       indicesFoo.should.not.deep.equal(indicesBar);
     });
 
@@ -93,23 +90,27 @@ describe('BloomFilter', () => {
       bloom.contains(bar).should.equal(false);
     });
 
-    it('Should return True when the items have been added to the filter.', () => {
+    it('Should return True when an item has been added to the filter.', () => {
       const bloom = new BloomFilter(bloomSizeMed, numHashMed);
 
       bloom.add(foo);
-      bloom.count.should.equal(1);
+      bloom.contains(foo).should.equal(true);
+    });
+
+    it('Should return True for all items that have been added to the filter.', () => {
+      const bloom = new BloomFilter(bloomSizeMed, numHashMed);
+
+      bloom.add(foo);
       bloom.contains(foo).should.equal(true);
 
       bloom.add(bar);
       bloom.contains(bar).should.equal(true);
-      bloom.count.should.equal(2);
     });
 
     it('Should return False when we test for an item not added to the filter.', () => {
       const bloom = new BloomFilter(bloomSizeMed, numHashMed);
 
       bloom.add(foo);
-      bloom.contains(foo).should.equal(true);
       bloom.contains(bar).should.equal(false);
     });
   });
@@ -119,28 +120,55 @@ describe('BloomFilter', () => {
       const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
 
       bloom.add(foo);
-      bloom.count.should.equal(1);
-
+      const fooBitsSet = bloom.bitArray.numberOfBitsSet();
+      fooBitsSet.should.be.above(0);
 
       bloom.add(bar);
-      bloom.count.should.equal(2);
+      const barBitsSet = bloom.bitArray.numberOfBitsSet();
+      barBitsSet.should.be.above(fooBitsSet);
+
     });
 
     it('Should be able to handle the addition of numbers to the filter.', () => {
       const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
 
       bloom.add(1);
-      bloom.count.should.equal(1);
+      bloom.bitArray.numberOfBitsSet().should.be.above(0);
     });
 
-    it('Should contain all the items added.', () => {
+    it('Should increment the count with each successful addition.', () => {
       const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
 
       bloom.add(foo);
-      bloom.contains(foo).should.equal(true);
+      bloom.count.should.equal(1);
 
       bloom.add(bar);
-      bloom.contains(bar).should.equal(true);
+      bloom.count.should.equal(2);
+    });
+
+    it('Should not increment the count when an element is already in the filter.', () => {
+      const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
+
+      bloom.add(foo);
+      bloom.count.should.equal(1);
+
+      bloom.add(bar);
+      bloom.count.should.equal(2);
+
+      bloom.add(foo);
+      bloom.count.should.equal(2);
+    });
+
+    it('Should set the correct indices in the bit array.', () => {
+      const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
+
+      bloom.add(foo);
+
+      const indices = bloom.calculateBitIndices(foo);
+
+      for (let i = 0; i < indices.length; i += 1) {
+        bloom.bitArray.getBit(indices[i]).should.equal(true);
+      }
     });
   });
 
@@ -157,6 +185,16 @@ describe('BloomFilter', () => {
       bloom.add(foo);
       bloom.add(bar);
       bloom.falsePositiveRate().should.be.above(0);
+    });
+
+    it('Should return a value greater than the previous when more items are added to the filter.', () => {
+      const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
+
+      bloom.add(foo);
+      const fooPositive = bloom.falsePositiveRate();
+      fooPositive.should.be.above(0);
+      bloom.add(bar);
+      bloom.falsePositiveRate().should.be.above(fooPositive);
     });
   });
 });
