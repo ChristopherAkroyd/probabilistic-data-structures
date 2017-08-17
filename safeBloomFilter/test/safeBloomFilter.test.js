@@ -79,11 +79,26 @@ describe('SafeBloomFilter', () => {
       largeLowBloom.should.not.be.oneOf([smallLowBloom, smallHighBloom, largeHighBloom]);
       largeHighBloom.should.not.be.oneOf([smallLowBloom, smallLowBloom, largeLowBloom]);
     });
+
+    it('Should return a different number of bits for different capacities.', () => {
+      const bitsLow = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateLow);
+      const bitsHigh = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateHigh);
+
+      bitsLow.should.not.equal(bitsHigh);
+    });
+
+
+    it('Should return a larger number of bits for the lower false positive rate.', () => {
+      const bitsLow = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateLow);
+      const bitsHigh = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateHigh);
+
+      bitsLow.should.be.above(bitsHigh);
+    });
   });
 
   describe('.optimalNumHashFunctions(key)', () => {
-    const bitsLow = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateLow);
-    const bitsHigh = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateHigh);
+    const bitsFpLow = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateLow);
+    const bitsFpHigh = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateHigh);
 
     it('Should return a the min value of 1 for a 0 capacity.', () => {
       SafeBloomFilter.optimalNumHashFunctions(0, 0).should.equal(1);
@@ -91,18 +106,23 @@ describe('SafeBloomFilter', () => {
     });
 
     it('Should return a value greater than 1 for different given capacities.', () => {
-      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsLow).should.be.above(1);
-      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsHigh).should.be.above(1);
+      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpLow).should.be.above(1);
+      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpHigh).should.be.above(1);
+    });
+
+    it('Should return a higher optimal number of hash functions for a lower false positive rate.', () => {
+      const hashFpLow = SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpLow);
+      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpHigh).should.be.below(hashFpLow);
     });
 
     it('Should return a different number for vastly different capacities and sizes.', () => {
       const smallCapacity = SafeBloomFilter.optimalNumHashFunctions(expectedInsertsSmall, SafeBloomFilter.estimateNumberBits(expectedInsertsSmall, fpRateHigh));
-      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsHigh).should.not.equal(smallCapacity);
+      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpLow).should.not.equal(smallCapacity);
     });
 
-    it('Should return a value greater number for a lower desired false positive rate.', () => {
-      const largeNumHashes = SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsLow);
-      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsHigh).should.be.above(largeNumHashes);
+    it('Should return a greater number for a lower desired false positive rate.', () => {
+      const largeNumHashes = SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpLow);
+      SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, bitsFpHigh).should.be.below(largeNumHashes);
     });
   });
 
@@ -146,14 +166,14 @@ describe('SafeBloomFilter', () => {
 
   describe('.falsePositiveRate()', () => {
     it('Should return a value less than or equal to the desired false probability rate when at the desired capacity.', () => {
-      const bloom = new SafeBloomFilter(expectedInsertsSmall, fpRateLow);
+      const bloom = new SafeBloomFilter(expectedInsertsMed, fpRateLow);
 
       // Fill the filter up to capacity.
-      for (let i = 0; i < expectedInsertsSmall; i += 1) {
+      for (let i = 0; i < expectedInsertsMed; i += 1) {
         bloom.addSafe(foo + i);
       }
 
-      bloom.falsePositiveRate().should.be.below(fpRateLow);
+      bloom.falsePositiveRate().should.be.at.most(fpRateLow);
     });
   });
 });

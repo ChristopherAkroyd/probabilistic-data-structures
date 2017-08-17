@@ -188,9 +188,12 @@ describe('BloomFilter', () => {
     });
 
     it('Should return a value greater than the previous when more items are added to the filter.', () => {
-      const bloom = new BloomFilter(bloomSizeSmall, numHashSmall);
+      const bloom = new BloomFilter(bloomSizeMed, numHashSmall);
 
-      bloom.add(foo);
+      for (let i = 0; i < bloomSizeMed / 2; i += 1) {
+        bloom.add(foo + i);
+      }
+
       const fooPositive = bloom.falsePositiveRate();
       fooPositive.should.be.above(0);
       bloom.add(bar);

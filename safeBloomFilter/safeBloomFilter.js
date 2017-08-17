@@ -31,8 +31,8 @@ class SafeBloomFilter extends BloomFilter {
     }
 
     const ln2Sq = Math.LN2 ** 2;
-    const nLnP = expectedInserts * Math.log(falsePositiveRate);
-    return Math.ceil(-1 * (nLnP / ln2Sq));
+    const nLnP = -expectedInserts * Math.log(falsePositiveRate);
+    return Math.ceil(nLnP / ln2Sq);
   }
 
   /**
@@ -49,10 +49,10 @@ class SafeBloomFilter extends BloomFilter {
    */
   static optimalNumHashFunctions(expectedInserts, size) {
     const min = 1;
-    const optimal = (expectedInserts / size) * Math.LN2;
+    const optimal = (size / expectedInserts) * Math.LN2;
 
-    if (optimal > 0) {
-      return optimal;
+    if (optimal > min) {
+      return Math.ceil(optimal);
     }
 
     return min;

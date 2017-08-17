@@ -94,7 +94,9 @@ class BloomFilter {
    * @returns {number}
    */
   falsePositiveRate() {
-    return (this.bitArray.numberOfBitsSet() / this.bitArray.length) ** this.kHashFunctions;
+    const rate = (this.bitArray.numberOfBitsSet() / this.bitArray.length) ** this.kHashFunctions;
+    // Allows for a much easier time during testing to fix it to a certain number of digits.
+    return +(rate).toFixed(3);
   }
 }
 
