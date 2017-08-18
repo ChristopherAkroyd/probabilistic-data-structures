@@ -18,6 +18,7 @@ class SafeBloomFilter extends BloomFilter {
    * m = - (n Ln P / (Ln 2)^2)
    *
    * https://en.wikipedia.org/wiki/Bloom_filter
+   * https://stackoverflow.com/questions/658439/how-many-hash-functions-does-my-bloom-filter-need
    *
    * @param {number} expectedInserts
    * @param {number} falsePositiveRate
@@ -42,6 +43,7 @@ class SafeBloomFilter extends BloomFilter {
    * k = (m / n) * ln(2).
    *
    * https://en.wikipedia.org/wiki/Bloom_filter
+   * https://stackoverflow.com/questions/658439/how-many-hash-functions-does-my-bloom-filter-need
    *
    * @param {number} expectedInserts
    * @param {number} size
