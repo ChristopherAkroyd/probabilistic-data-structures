@@ -4,6 +4,8 @@ const MurMur = require('imurmurhash');
 const seedOne = 535345345;
 const seedTwo = 312312323;
 
+// @TODO Needs completion and updating.
+
 /**
  * https://bdupras.github.io/filter-tutorial/
  * https://en.wikipedia.org/wiki/Bloom_filter
@@ -104,6 +106,24 @@ class CountingBloomFilter {
       counter += this.bitArray[i];
     }
     return counter;
+  }
+
+  remove(key) {
+    const indices = this.calculateBitIndices(key);
+    let numAlreadySet = 0;
+
+    for (let i = 0; i < indices.length; i += 1) {
+      if (this.bitArray[indices[i]] > 0) {
+        numAlreadySet += 1;
+      }
+    }
+
+    if (numAlreadySet === indices.length) {
+      for (let i = 0; i < indices.length; i += 1) {
+        this.bitArray[indices[i]] -= 1;
+      }
+      this.count -= 1;
+    }
   }
 }
 
