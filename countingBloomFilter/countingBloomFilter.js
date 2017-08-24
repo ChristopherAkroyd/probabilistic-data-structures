@@ -11,11 +11,17 @@ const seedTwo = 312312323;
  * https://en.wikipedia.org/wiki/Bloom_filter
  */
 class CountingBloomFilter {
-  constructor(numCells, numHashFunctions) {
+  constructor(numCells, numHashFunctions, maxValue = 255) {
     this.count = 0;
-    this.size = numCells;
-    this.kHashFunctions = numHashFunctions;
-    this.bitArray = new Uint32Array(numCells);
+    // Number of Cells ( Length of the Bit Array).
+    this.m = numCells;
+    // Number of Hash functions to use.
+    this.k = numHashFunctions;
+    // Maximum value our counters go up to.
+    this.maxValue = maxValue;
+    // The Array in which our Bloom Filter counters are stored.
+    this.bitArray = CountingBloomFilter.calcAppropriateArray(numCells, maxValue);
+    // Two individual hash functions.
     this.murmurOne = new MurMur('', seedOne);
     this.murmurTwo = new MurMur('', seedTwo);
   }
@@ -29,20 +35,20 @@ class CountingBloomFilter {
   calculateBitIndices(key) {
     const hash1 = this.murmurOne.hash(key).result();
     const hash2 = this.murmurTwo.hash(key).result();
-    const kHashes = [];
-    for (let i = 0; i < this.kHashFunctions; i += 1) {
-      kHashes.push((hash1 + (i * hash2)) % this.size);
+    const indices = [];
+    for (let i = 0; i < this.k; i += 1) {
+      indices.push((hash1 + (i * hash2)) % this.m);
     }
 
     this.murmurOne.reset(seedOne);
     this.murmurTwo.reset(seedTwo);
 
-    return kHashes;
+    return indices;
   }
 
   /**
-   * Adds the given key to the filter, if all the bits are already set then it doesn't increase the count
-   * as it is assumed to be already added to the filter.
+   * Adds the given key to the filter, if all the bits are already set then it doesn't
+   * increase the count as it is assumed to be already added to the filter.
    *
    * @param key
    */
@@ -51,10 +57,15 @@ class CountingBloomFilter {
     let numAlreadySet = 0;
 
     for (let i = 0; i < indices.length; i += 1) {
-      if (this.bitArray[indices[i]] > 0) {
+      const counterValue = this.bitArray[indices[i]];
+      if (counterValue > 0) {
         numAlreadySet += 1;
       }
-      this.bitArray[indices[i]] += 1;
+
+      // Only increment the counter if we aren't going to overflow the integer.
+      if (!(counterValue >= this.maxValue)) {
+        this.bitArray[indices[i]] += 1;
+      }
     }
 
     if (numAlreadySet < indices.length) {
@@ -95,7 +106,7 @@ class CountingBloomFilter {
    * @returns {number}
    */
   falsePositiveRate() {
-    const rate = (this.numberOfBitsSet() / this.bitArray.length) ** this.kHashFunctions;
+    const rate = (this.numberOfBitsSet() / this.bitArray.length) ** this.k;
     // Allows for a much easier time during testing to fix it to a certain number of digits.
     return +(rate).toFixed(3);
   }
@@ -124,6 +135,18 @@ class CountingBloomFilter {
       }
       this.count -= 1;
     }
+  }
+
+  static calcAppropriateArray(numCells, maxValue) {
+    if (maxValue > 0 && maxValue <= 255) {
+      return new Uint8Array(numCells);
+    } else if (maxValue > 255 && maxValue <= 65535) {
+      return new Uint16Array(numCells);
+    } else if (maxValue > 65535 && maxValue <= 4294967295) {
+      return new Uint32Array(numCells);
+    }
+
+    throw new Error('Invalid MaxValue Provided');
   }
 }
 

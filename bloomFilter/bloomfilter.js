@@ -13,7 +13,7 @@ class BloomFilter {
   constructor(bits, numHashFunctions) {
     this.count = 0;
     this.size = bits;
-    this.kHashFunctions = numHashFunctions;
+    this.k = numHashFunctions;
     this.bitArray = new BitArray(this.size);
     this.murmurOne = new MurMur('', seedOne);
     this.murmurTwo = new MurMur('', seedTwo);
@@ -29,7 +29,7 @@ class BloomFilter {
     const hash1 = this.murmurOne.hash(key).result();
     const hash2 = this.murmurTwo.hash(key).result();
     const kHashes = [];
-    for (let i = 0; i < this.kHashFunctions; i += 1) {
+    for (let i = 0; i < this.k; i += 1) {
       kHashes.push((hash1 + (i * hash2)) % this.size);
     }
 
@@ -94,7 +94,7 @@ class BloomFilter {
    * @returns {number}
    */
   falsePositiveRate() {
-    const rate = (this.bitArray.numberOfBitsSet() / this.bitArray.length) ** this.kHashFunctions;
+    const rate = (this.bitArray.numberOfBitsSet() / this.bitArray.length) ** this.k;
     // Allows for a much easier time during testing to fix it to a certain number of digits.
     return +(rate).toFixed(3);
   }

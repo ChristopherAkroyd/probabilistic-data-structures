@@ -24,14 +24,14 @@ describe('BloomFilter', () => {
       const bloomLarge = new BloomFilter(bloomSizeLarge, numHashLarge);
 
       bloomSmall.size.should.equal(bloomSizeSmall);
-      bloomSmall.kHashFunctions.should.equal(numHashSmall);
+      bloomSmall.k.should.equal(numHashSmall);
 
       bloomMed.size.should.equal(bloomSizeMed);
-      bloomMed.kHashFunctions.should.equal(numHashMed);
+      bloomMed.k.should.equal(numHashMed);
 
 
       bloomLarge.size.should.equal(bloomSizeLarge);
-      bloomLarge.kHashFunctions.should.equal(numHashLarge);
+      bloomLarge.k.should.equal(numHashLarge);
     });
 
     it('Should initialise the underlying BitArray to the correct length.', () => {

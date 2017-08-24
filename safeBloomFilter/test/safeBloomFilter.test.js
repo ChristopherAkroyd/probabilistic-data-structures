@@ -31,7 +31,7 @@ describe('SafeBloomFilter', () => {
       const bloom = new SafeBloomFilter(expectedInsertsLarge, fpRateHigh);
 
       const numBits = SafeBloomFilter.estimateNumberBits(expectedInsertsLarge, fpRateHigh);
-      bloom.kHashFunctions.should.equal(SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, numBits));
+      bloom.k.should.equal(SafeBloomFilter.optimalNumHashFunctions(expectedInsertsLarge, numBits));
     });
 
     it('Should initialise the capacity to the correct value.', () => {

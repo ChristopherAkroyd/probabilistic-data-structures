@@ -2,6 +2,7 @@ const chai = require('chai');
 
 const BloomFilter = require('../countingBloomFilter.js');
 
+const expect = chai.expect;
 chai.should();
 
 const bloomSizeSmall = 32;
@@ -22,15 +23,15 @@ describe('CountingBloomFilter', () => {
       const bloomMed = new BloomFilter(bloomSizeMed, numHashMed);
       const bloomLarge = new BloomFilter(bloomSizeLarge, numHashLarge);
 
-      bloomSmall.size.should.equal(bloomSizeSmall);
-      bloomSmall.kHashFunctions.should.equal(numHashSmall);
+      bloomSmall.m.should.equal(bloomSizeSmall);
+      bloomSmall.k.should.equal(numHashSmall);
 
-      bloomMed.size.should.equal(bloomSizeMed);
-      bloomMed.kHashFunctions.should.equal(numHashMed);
+      bloomMed.m.should.equal(bloomSizeMed);
+      bloomMed.k.should.equal(numHashMed);
 
 
-      bloomLarge.size.should.equal(bloomSizeLarge);
-      bloomLarge.kHashFunctions.should.equal(numHashLarge);
+      bloomLarge.m.should.equal(bloomSizeLarge);
+      bloomLarge.k.should.equal(numHashLarge);
     });
 
     it('Should initialise the underlying BitArray to the correct length.', () => {
@@ -292,6 +293,43 @@ describe('CountingBloomFilter', () => {
       for (let i = 0; i < indices.length; i += 1) {
         bloom.bitArray[indices[i]].should.at.least(0);
       }
+    });
+  });
+
+  describe('.calcAppropriateArray(numCells, maxValue)', () => {
+    it('Should return Arrays with a length of 32.', () => {
+      const uInt8Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFF);
+      const uInt16Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFFFF);
+      const uInt32Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFFFFFFFF);
+
+      uInt8Array.length.should.equal(bloomSizeSmall);
+      uInt16Array.length.should.equal(bloomSizeSmall);
+      uInt32Array.length.should.equal(bloomSizeSmall);
+    });
+
+    it('Should return different typed arrays for the max value.', () => {
+      const uInt8Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFF);
+      const uInt16Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFFFF);
+      const uInt32Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFFFFFFFF);
+
+      uInt8Array.should.be.instanceof(Uint8Array);
+      uInt16Array.should.be.instanceof(Uint16Array);
+      uInt32Array.should.be.instanceof(Uint32Array);
+    });
+
+    it('Should return different typed arrays for different max values and with different lengths.', () => {
+      const uInt8Array = BloomFilter.calcAppropriateArray(bloomSizeMed, 0xFF);
+      const uInt16Array = BloomFilter.calcAppropriateArray(bloomSizeLarge, 0xFFFF);
+      const uInt32Array = BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFFFFFFFF);
+
+      uInt8Array.length.should.equal(bloomSizeMed);
+      uInt16Array.length.should.equal(bloomSizeLarge);
+      uInt32Array.length.should.equal(bloomSizeSmall);
+    });
+
+    it('Should throw an error for invalid values (out of Uint bounds).', () => {
+      expect(() => BloomFilter.calcAppropriateArray(bloomSizeSmall, -0xFF)).to.throw();
+      expect(() => BloomFilter.calcAppropriateArray(bloomSizeSmall, 0xFFFFFFFFFFFF)).to.throw();
     });
   });
 });
